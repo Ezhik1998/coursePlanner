@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>Фильтрация курсов</title>
+    <script src="vue.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+    <script  src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+        crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+    <!-- <link href="bootstrap.min.css" rel="stylesheet" /> -->
+    <style>
+        span {
+            color: red;
+            font-weight: bold;
+        }
+
+        span.isPassed {
+            color: green;
+            font-weight: normal;
+        }
+        table{
+            border-collapse: collapse; 
+            border: 2px solid white;                       
+        }
+        
+        .table td, .table th{
+            padding: 0.5em;
+            vertical-align: 0%;
+        }
+        .th_arrow{            
+            display: flex;
+        }
+        
+        /* .form-group{
+            margin-left: -15px;            
+        } */
+        .input-group{
+            margin-bottom: 10px;
+        }
+        .container{
+            margin-top: 15px;
+        }
+        .form-row{
+            margin-bottom: -30px;
+        }
+        .arrow_down{
+            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKSSURBVHhe7ds7yI1xHMDxV+QaShhcJgaXyEgGE4NiEIWJwW0UZcCmhMFCMRiUQTYLYVAyMClhoEiESJRLyO37izfi93LOe57nnPM85/utz3qe//n/T895rn1mZmZmZmZmZmZmZmZmZmZmZmZmZmZmZrVpCJbiMM6oISexHRNRaFNwBd80KO+xAYU0DLeRbUjNWYOWi91U9uFq3mW03CZkH67m3UfLLUf24WreVbTcKLxGtgE1ZycKaS+yDahxzzEOhTQSt5BtSI1Zj0Kbi3fINqZ/O4FS2oxsgxrYHYxGaZ1GtmH9LfYo81BqY3AT2QD0y1esRVuaiZfIBqIfDqGtLcNnZIPpdRcwFG1vG7IB9bLYnY9Hx9qPbGC96BGmoaPFjatTyAbYS+LyUulHVI02HGeRDbQXxOHtEnRVcfJzDdmA6ywObFaiK5uEe8gGXldxYNPVxTnKE2SDr5t9qESz8BTZl6iLA6hUdV6Ug6hks1G3RansYvQXi/IM2ZermsovRn91WJS2Xywsuzmo6u6rdovRXxwSP0D2pbvVHtS6eE64Cg9MfEHXn/QV1QR082WWj1iHnipuBV9ENiGdFBcK42nNniyuEsd7FNnEdMIrLEZPF7c6jyKboHaKm0vzYT/bgfgjzSarbDcwFfZHqxFvG2WTVpbzGAsboEV4gWzyinYc8YaY/acZuItsEosQD7HtgjVRnKtcQjahrXiDVbBBFLuTI8gmdjAeYgGsxbbgE7JJblS8TjYZVlDxmE28hZRN9v/E+xkjYAU3HdeRTXrmA7bCSix+6XG4mi3A7x5jIaxNbcRbZIsRR2f+X3Sg2IXtRlygPIdjWIF43tjMzMzMzMzMzMzMzMzMzMzMzMyM+vq+A3zCNVvPOXVOAAAAAElFTkSuQmCC")
+        }
+        .arrow_up {
+            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAKvSURBVHhe7dxLqA1xHMDx65HylpKUYukRio2UkmRDNsqCrKws2CkrLDw2dp5rWVlYyE6KBSsUKZSNFEp5s/D+/tLN6fa73XvumZkzZ+b7rc/G4szM/381c/4zc4bMzMzMzMzMzMzMzMzMzMzMzFrXLKzBRiyNf7D+NAfn8A1/OjzEZliFrcBTdE5Ep184ismwktuFz8gmYqTrmAcroak4jd/IBn80z7EaVmDzcQPZgI/HF+yEFVCcL+KvPBvobsT/rDivTIJNsG34iGyAJ+oKZsK67BB+IhvUXt3HYtg4moLzyAaySC/hyX6M4lt3XKpmA1iGT9gKS1qEe8gGrkw/sA/W0Uq8QDZgVTkBr8AoFgXfIxukql1CfAFtbdsxcnGw365hOlrXHnxHNij9dhtz0ZoOoNs1qao9wEI0vmPIBqCOnmEJGllcwZxBduB1Fl8gl6NRxWRcRHbAg+ANGjMpMRkXkB3oIGnEpMRkVLEuVZXXGNhJadpkDItJWYaBKibjLLIDaoKBmpSmT8awVxiISTmF7ACaKC6Ja32jaz+yHW+yR6jlMssOlHXLte5uYhpq0wZ8RbazbREPT8Tt5763Ch+Q7WTbxGV+X4sTWpzYsp1rq8PoS7MRJ7Rsp9osbivsRqXFd42ryHZI/86na1FZR5DtiP6LhzYWoPTiPnjd7/bVxS2U+tBE3D17h2zjyp1EKcU19h1kG9Xo4m2uLSi848g2qLHF6nChD0ysR1uXRYoSV6WFdRfZRtSdTei5eIMp+3B17zJ6bi+yD1f3nqDnYhkg+3B17zF6Ln6uIt6hyDag7hS2GnwQcT2dbUTjEz/5UehSSvx+SCwFZBvT6N4iXgaagVKKZfd4WXKdxhRLTbEybmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmVl5DQ38Bn2M5ujSdoA0AAAAASUVORK5CYII=")
+        }
+        .arrow {   
+            margin: 7px 0 0 5px;                 
+            width: 12px;
+            height: 15px;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }        
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h2>
+            Планировщик курсов
+        </h2>
+        <h4>Пользователь: {{user}}. Количество курсов - {{courses.length}}</h4>
+    </div>
+    <hr/>
+    <div class="panel">
+        <label for="add-course"><h6>Добавление курса</h6></label>
+        <div class="input-group">
+            <input class="form-control" v-model="courseName" />
+            <span class="input-group-btn">
+                <button class="btn btn-default" @click="addCourse()" id="add-course">Добавить</button>
+            </span>
+        </div>
+        <div class = "form-row">
+            <div class="form-group col-md-6">
+                <label><h6>Поиск по названию</h6></label>
+                <input placeholder="Поиск ..." class="form-control" v-model="searchText"/>
+            </div>
+            <div class="form-group col-md-6">
+                <label><h6>Фильтр по пройденности</h6></label>
+                <select v-model="selectedFilter" class="form-control"> 
+                    <option value="all">Все</option>
+                    <option value="true">Пройденные</option>
+                    <option value="false">Не пройденные</option>
+                </select>
+            </div>
+            
+        </div>
+        <br />           
+        
+        
+        <table class="table table-hover">
+            <thead>
+                <tr>
+               
+                    <th @click="sortTable('name')"> <div class="th_arrow">Курс
+                        <div class="arrow" v-if="sortParam == 'name'" :class="order ? 'arrow_up' : 'arrow_down'"></div>
+                    </div>
+                    </th>                
+                    <th></th>
+                    <th @click="sortTable('passed')"><div class="th_arrow">Пройден
+                        <div class="arrow" v-if="sortParam == 'passed'" :class="order ? 'arrow_up' : 'arrow_down'"></div>
+                    </div>
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(course, index) in orderedAndFilteredList">
+                    <td v-html="course.name"></td>
+                    <td><input type="checkbox" v-model="course.passed" /></td>
+                    <td>
+                        <span :class="{isPassed: course.passed}">
+                            {{showText(course.passed)}}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" @click="deleteCourse(course.index)">Удалить курс</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<script>
+    let model = {
+        order: false,
+        user: "Tetiana",
+        courseName: "",
+        searchText: "",
+        sortParam: "", 
+        selectedFilter: "all",
+        courses: [{name: "HTML5 &amp; CSS3", passed: true},
+            {name: "JavaScript Essential", passed: false},
+            {name: "JavaScript Advanced", passed: true},
+            {name: "JQuery", passed: false},
+            {name: "vueJS", passed: true}]
+    };
+
+    let vm = new Vue({
+        el: '.container',
+        
+        data: model,
+        
+        methods: {
+            addCourse() {
+                let text = this.courseName.trim();
+                if (text.length != 0) {
+                    this.courses.push({name: text, passed: false});
+                    this.courseName = "";
+                }
+            },
+
+            showText: (passed) => passed ? "Да" : "Нет",
+
+            deleteCourse(index) {
+                console.log(index)
+                this.courses.splice(index, 1);
+            },
+
+            sortTable(col){
+                if(this.sortParam === col){
+                    this.order = !this.order
+                }
+                else {
+                    this.order = true
+                    this.sortParam = col
+                }
+            }
+        },
+
+        computed: {
+            orderedAndFilteredList() { 
+                // filter by passed
+                let filtered = (this.selectedFilter !=="all") 
+                    ? this.courses.map((item, index) => {item.index = index; return item})
+                                  .filter((course) => course.passed.toString() === this.selectedFilter)
+                    : this.courses.map((item, index) => {item.index = index; return item});  
+                
+                // search by name                                           
+                let text = this.searchText.toLowerCase();                
+                if (text !== ""){
+                    filtered = filtered.map(function(item, index){                    
+                    item.index = index;
+                    console.log("Item " + item.name)
+                    return item;
+                }).filter((item) => text === "" || item.name.toLowerCase().indexOf(text) > -1)}
+                             
+
+                // sort by param
+                switch(this.sortParam){                    
+                    case 'name': return _.orderBy(filtered , [course => course.name.toLowerCase()], this.order ? 'asc' : 'desc');
+                    case 'passed': return _.orderBy(filtered , [course => course.passed.toString()], this.order ? 'asc' : 'desc'); 
+                    default: return filtered ;
+                }
+            }
+        }
+    });
+// let sortByName =  (d1, d2) => (d1.name.toLowerCase() - d2.name.toLowerCase());
+// let sortByPassed = (d1, d2) => d1.passed.toString() > d2.passed.toString() ? 1 : -1;
+</script>
+</body>
+</html>
