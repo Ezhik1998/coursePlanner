@@ -74,7 +74,7 @@
         <div class="input-group">
             <input class="form-control" v-model="courseName" />
             <span class="input-group-btn">
-                <button class="btn btn-default" @click="addCourse()" id="add-course">Добавить</button>
+                <button class="btn btn-default" @click="addCourse" id="add-course">Добавить</button>
             </span>
         </div>
         <div class = "form-row">
@@ -97,8 +97,7 @@
         
         <table class="table table-hover">
             <thead>
-                <tr>
-               
+                <tr>               
                     <th @click="sortTable('name')"> <div class="th_arrow">Курс
                         <div class="arrow" v-if="sortParam == 'name'" :class="order ? 'arrow_up' : 'arrow_down'"></div>
                     </div>
@@ -185,8 +184,7 @@
                 // search by name                                           
                 let text = this.searchText.toLowerCase();                
                 if (text !== ""){
-                    filtered = filtered.map((item, index) => {item.index = index; return item})
-                                       .filter((item) => item.name.toLowerCase().indexOf(text) > -1)}                             
+                    filtered = filtered.filter((item) => item.name.toLowerCase().indexOf(text) > -1)}                             
 
                 // sort by param
                 switch(this.sortParam){                    
